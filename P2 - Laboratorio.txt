@@ -1,0 +1,146 @@
+============================================================================
+P2 - Laboratorio
+============================================================================
+
+
+----------------------------------------------------------------------------
+1. Instalación del entorno de desarrollo ARM.
+    - Instalamos el compilador ARM.
+
+bash
+mkdir /c/Sourcery
+tar xvjf /c/sci/Tools/arm-2013.11-33-arm-none-linux-gnueabi-i686-mingw32.tar.bz2 -C /c/Sourcery
+
+    - Añadimos el compliador ARM al PATH.
+        Editar las variables de entorno de esta cuenta
+            Variables de usuario -> PATH -> Editar...
+                Añadir al valor de la variable: C:\Sourcery\arm-2013.11\bin
+
+----------------------------------------------------------------------------
+2. Conexión sin contraseña con clave RSA.
+
+bash
+mkdir -p /home/$USERNAME
+
+ssh root@192.168.7.2
+mkdir -p $HOME/.ssh
+exit
+
+cd /home/$USERNAME/.ssh
+cat known_hosts
+ssh-keygen
+scp id_rsa.pub root@192.168.7.2:/home/root/.ssh/authorized_keys
+
+ssh root@192.168.7.2
+exit
+
+
+----------------------------------------------------------------------------
+3. Copia local de la librería Modbus ARM.
+    - Copiamos "/usr/local/include" y "/usr/local/lib" en "C:\sci\beaglebone\libmodbus" con WinSCP.
+
+
+----------------------------------------------------------------------------
+4. Creación de proyectos ARM.
+    - Ejecutamos Qt Creator.
+        Tools -> Options -> Devices -> Add... -> Generic Linux Device -> Start Wizard
+            The name to identify this configuration: BeagleBone
+            The device's host name or IP address: 192.168.7.2
+            The user name to log into the device: root
+            The authentication type: Password
+            The user's password:
+            Apply
+
+        Tools -> Options -> Build & Run
+            Compilers -> Add... -> GCC
+                Name: Sourcery ARM
+                Compiler path: C:\Sourcery\arm-2013.11\bin\arm-none-linux-gnueabi-gcc.exe
+                Apply
+
+            Debuggers -> Add
+                Name: Sourcery ARM
+                Path: C:\Sourcery\arm-2013.11\bin\arm-none-linux-gnueabi-gdb.exe
+                Apply
+
+            Kits -> Add
+                Name: BeagleBone
+                Device type: Generic Linux Device
+                Device: BeagleBone
+                Complier: Sourcery ARM
+                Debugger: Sourcery ARM
+                Apply
+
+        File -> New File or Project...
+            Import Project -> Import Existing Project -> Choose...
+                Project name: mbserver
+                Location: C:\sci\beaglebone\mbserver
+                Next
+                Finish
+
+            mbserver.includes
+                ../libmodbus/include/modbus
+
+        Projects -> Build & Run
+            Add Kit -> BeagleBone
+            Desktop -> Remove Kit
+
+            Run
+                Deployement
+                    Check for free disk space -> Disable
+                    Upload files via SFTP -> Disable
+                    Add Deploy Step -> Custom Process Step
+                        Command: make
+                        Arguments: deploy
+
+                Run
+                    Executable: make
+                    Arguments: run
+                    Run in terminal
+
+        Build Project
+
+        Debug -> Attach to Remote Debug Server...
+            Kit: BeagleBone
+            Server port: 5000
+            Override server address: 192.168.7.2
+            Local executable: C:\sci\beaglebone\mbserver\mbserver
+            Break at "main": enabled
+            OK
+
+
+----------------------------------------------------------------------------
+5. Lectura y escritura de GPIOs.
+
+#
+# USRx leds
+#
+echo 0 > /sys/class/leds/beaglebone:green:usr0/brightness
+echo 0 > /sys/class/leds/beaglebone:green:usr1/brightness
+echo 0 > /sys/class/leds/beaglebone:green:usr2/brightness
+echo 0 > /sys/class/leds/beaglebone:green:usr3/brightness
+echo 1 > /sys/class/leds/beaglebone:green:usr0/brightness
+
+#
+# P9_12 = GPIO1_28 = GPIO_60 (32*1+28) led
+#
+echo 60 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio60/direction
+echo 0 > /sys/class/gpio/gpio60/value
+echo 1 > /sys/class/gpio/gpio60/value
+echo 60 > /sys/class/gpio/unexport
+
+#
+# P9_14 = GPIO1_18 = GPIO_50 (32*1+18) pulsador
+#
+echo 50 > /sys/class/gpio/export
+echo in > /sys/class/gpio/gpio50/direction
+watch -n 0.1 cat /sys/class/gpio/gpio50/value
+echo 50 > /sys/class/gpio/unexport
+
+# http://falsinsoft.blogspot.com.es/2012/11/access-gpio-from-linux-user-space.html
+# http://elinux.org/BeagleBone_Community
+#   "C code for GPIO polling" -> https://gist.github.com/ajmontag/4013192
+# https://developer.ridgerun.com/wiki/index.php/Gpio-int-test.c
+
+
+============================================================================

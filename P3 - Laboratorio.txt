@@ -1,0 +1,101 @@
+============================================================================
+P3 - Laboratorio
+============================================================================
+
+
+----------------------------------------------------------------------------
+1. Conexión con el XBee a través de la UART4.
+
+    - Activamos la UART4.
+
+ls -l /lib/firmware/BB-UART*
+cat /lib/firmware/BB-UART4-00A0.dts
+ls /dev/tty*
+cat /sys/devices/bone_capemgr.*/slots
+echo BB-UART4 > /sys/devices/bone_capemgr.*/slots
+cat /sys/devices/bone_capemgr.*/slots
+ls /dev/tty*
+
+    - Configuramos la UART4.
+
+minicom --setup
+
+    Serial port setup
+        Serial Device         : /dev/ttyO4
+        Bps/Par/Bits          : 9600 8N1
+        Hardware Flow Control : No
+        Software Flow Control : No
+    Screen and keyboard
+        Add linefeed          : Yes
+        Local echo            : Yes
+    Save setup as dfl
+    Exit from Minicom
+
+    - Conectamos con el XBee.
+
+minicom
+
++++OK
+at
+OK
+atvr
+20A7
+athv
+194B
+
+CTRL-A Q
+
+    - Configuramos el XBee como dispositivo final.
+
+minicom
+
++++
+atni PUESTOxx
+atsm 4
+atso 2
+atct 258
+atac
+atwr
+atcn
+
+
+----------------------------------------------------------------------------
+2. Conexión con el XBee a través del PC.
+
+    - Copiamos "socat-1.7.2.3.tar.gz" en "$HOME/sci" con WinSCP.
+
+    - Compilamos e instalamos la utilidad "socat".
+
+date -s "2014-03-01"
+
+cd $HOME/sci
+tar xvzf socat-1.7.2.3.tar.gz
+cd socat-1.7.2.3
+./configure
+make
+make install
+
+    - Creamos un puente entre la UART4 y la UART virtual:
+
+ps ax | grep ttyGS0
+systemctl stop serial-getty@ttyGS0.service
+
+socat /dev/ttyO4,raw,echo=0 /dev/ttyGS0,raw,echo=0
+
+    - Instalamos "40003002_C.exe" y ejecutamos "X-CTU" en el PC.
+            Select Com Port: Gadget Serial (COMx)
+            Terminal
+            Modem Configuration -> Read
+
+
+----------------------------------------------------------------------------
+3. Uso de la UART en C.
+
+# Using the UART
+# http://www.raspberry-projects.com/pi/programming-in-c/uart-serial-port/using-the-uart
+
+# RS-232 for Linux and Windows
+# http://www.teuniz.net/RS-232
+
+
+============================================================================

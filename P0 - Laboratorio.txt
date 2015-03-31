@@ -1,0 +1,143 @@
+============================================================================
+P0 - Laboratorio
+============================================================================
+
+
+----------------------------------------------------------------------------
+1. Instalación del BeagleBone Black.
+    1. Conectamos BeagleBone Black a PC por USB.
+	- Abrimos "X:\START.htm".
+	- Explicación PWR y USRx leds.
+
+    2. Instalamos controladores.
+	- Sistema -> Sistema operativo de 64 bits.
+	- Ejecutamos "BONE_D64.exe".
+	- Administrador de dispositivos:
+	    Dispositivo de almacenamiento masivo.
+	    Adaptador de red virtual (RNDIS).
+	    Puerto COM virtual (FTDI).
+
+    3. Navegamos en el servidor web.
+	ipconfig /all
+	ping 192.168.7.2
+	Firefox -> http://192.168.7.2
+
+
+----------------------------------------------------------------------------
+2. Introducción al BoneScript.
+    - BoneScript:
+	Turn LEDS on [run]
+	Turn LEDS off [run]
+	Restore LEDS to default state [run]
+
+    - Demos -> Blink on-board LED
+
+    - Demos -> Blink an external LED
+	P9_12 led
+
+    - Demos -> Push button
+	http://beagleboard.org/Support/BoneScript/pushbutton
+	P9_12 led
+	P9_14 pulsador
+
+
+----------------------------------------------------------------------------
+3. Conectores de expansión hardware.
+    P9_12 = GPIO1_28 = GPIO_60 (32*1+28) led
+    P9_14 = GPIO1_18 = GPIO_50 (32*1+18) pulsador
+
+    P9_11 = GPIO0_30 = GPIO_30 (32*0+30) UART4_RXD
+    P9_13 = GPIO0_31 = GPIO_31 (32*0+31) UART4_TXD
+
+    BeagleBone Black System Reference Manual (BBB_SRM.pdf)
+	Table 11. Expansion Header P8 Pinout
+	Table 12. Expansion Header P9 Pinout
+
+
+----------------------------------------------------------------------------
+4. Consola remota Linux.
+    - Ejecutamos "putty.exe".
+	Host name (or IP address): 192.168.7.2
+
+    - List of common Linux commands.
+
+    - Alias interesantes:
+
+nano $HOME/.profile
+------------------------------ Copiar y pegar ------------------------------
+alias ll='ls -lXh --color=auto'
+alias la='ls -lXha --color=auto'
+alias rm='rm -i'
+------------------------------ Copiar y pegar ------------------------------
+
+
+----------------------------------------------------------------------------
+5. Directorio remoto Linux.
+    - Ejecutamos "WinSCP.exe".
+	File protocol: SFTP
+	Host name: 192.168.7.2
+
+	Manage -> Open in PuTTY
+
+
+----------------------------------------------------------------------------
+6. Escritorio remoto Linux.
+    - Arrancamos servidor VNC.
+
+mkdir $HOME/sci
+nano $HOME/sci/x11vnc.sh
+------------------------------ Copiar y pegar ------------------------------
+#!/bin/sh
+
+x11vnc -bg -forever -o %HOME/.x11vnc.log.%VNCDISPLAY -auth /var/run/gdm/auth-for-gdm*/database -display :0
+------------------------------ Copiar y pegar ------------------------------
+chmod 755 $HOME/sci/x11vnc.sh
+$HOME/sci/x11vnc.sh
+
+    - Ejecutamos "vncviewer.exe".
+	VNC Server: 192.168.7.2
+
+
+----------------------------------------------------------------------------
+7. Conexión a Internet.
+    - Compartir conexión a Internet.
+	Centro de redes y recursos compartidos -> Cambiar configuración del adaptador
+
+route del default
+route add default gw 192.168.7.1
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+ping www.google.com
+
+    - Establecer la fecha manualmente.
+
+date -s "2014-02-01 15:00"
+
+    - Establecer la fecha automáticamente.
+
+#ntpdate -b -s -u es.pool.ntp.org
+ntpdate -b -s -u ntp.upv.es
+date
+ls -l /etc/localtime
+ln -s -f /usr/share/zoneinfo/Europe/Paris /etc/localtime
+ls -l /etc/localtime
+date
+
+    - Crear script para automatizar el proceso.
+
+nano $HOME/sci/netdate.sh
+------------------------------ Copiar y pegar ------------------------------
+#!/bin/sh
+
+# Configurar acceso a Internet.
+route del default
+route add default gw 192.168.7.1
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
+# Establecer la fecha automáticamente.
+ntpdate -b -s -u ntp.upv.es
+date
+------------------------------ Copiar y pegar ------------------------------
+chmod 755 $HOME/sci/netdate.sh
+
+
+============================================================================

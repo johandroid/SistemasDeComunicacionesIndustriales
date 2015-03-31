@@ -1,0 +1,138 @@
+============================================================================
+P1 - Laboratorio
+============================================================================
+
+
+----------------------------------------------------------------------------
+1. Instalación del entorno de desarrollo PC.
+    - Editor de texto.
+        Ejecutamos "pspad457inst_en.exe".
+
+    - Compilador.
+        Ejecutamos "mingw-get-setup.exe".
+            Basic Setup:
+                mingw-developer-toolkit
+                mingw32-base
+                mingw32-gcc-g++
+                msys-base
+            Installation -> Apply Changes -> Apply
+
+    - Añadimos el editor de texto y el compilador al PATH.
+        Editar las variables de entorno de esta cuenta
+            Variables de usuario -> Nueva...
+                Nombre de la variable: PATH
+                Valor de la variable: C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\MinGW\msys\1.0\local\bin;C:\Program Files\PSPad editor
+
+    - Instalación del IDE.
+        Ejecutamos "qt-creator-opensource-windows-x86-3.0.1.exe"
+
+
+----------------------------------------------------------------------------
+2. Instalación de la librería Modbus PC.
+
+bash
+mkdir -p /c/sci/host
+cd /c/sci/host
+tar xvzf ../Modbus/libmodbus-3.0.5.tar.gz
+cd libmodbus-3.0.5
+./configure
+make
+
+# Google -> libmodbus "implicit declaration of function"
+#     https://github.com/stephane/libmodbus/issues/163
+
+notepad src/modbus-tcp.c
+
+pspad src/modbus-tcp.c
+------------------------------ Copiar y pegar ------------------------------
+/* ws2_32.dll has getaddrinfo and freeaddrinfo on Windows XP and later.
+ * minwg32 headers check WINVER before allowing the use of these */
+# if !defined( _WIN32_WINNT ) || ( _WIN32_WINNT < 0x0501 )
+#  undef  _WIN32_WINNT
+#  define _WIN32_WINNT 0x0501
+# endif
+# if !defined( WINVER ) || ( WINVER < 0x0501 )
+#  undef  WINVER
+#  define WINVER 0x0501
+# endif
+# include <ws2tcpip.h>
+------------------------------ Copiar y pegar ------------------------------
+
+make
+make install
+exit
+
+
+----------------------------------------------------------------------------
+3. Creación de proyectos PC.
+    - Ejecutamos Qt Creator.
+        Tools -> Options -> Build & Run
+            Compilers -> Auto-detected -> MinGW
+
+            Debuggers -> Add
+                Name: MinGW
+                Path: C:\MinGW\bin\gdb.exe
+                Apply
+
+            Kits -> Add
+                Name: Desktop MinGW
+                Device type: Desktop
+                Device: Local PC
+                Complier: MinGW
+                Debugger: MinGW
+                Apply
+
+        File -> New File or Project...
+            Import Project -> Import Existing Project -> Choose...
+                Project name: unit-test-client
+                Location: C:\sci\host\unit-test-client
+                Next
+                Finish
+
+            unit-test-client.includes
+                ../libmodbus-3.0.5/src
+
+            unit-test-client -> Add Existing Files...
+                ../libmodbus-3.0.5/src/*.c
+                ../libmodbus-3.0.5/src/*.h
+
+        Projects -> Build & Run
+            Add Kit -> Desktop MinGW
+            Desktop -> Remove Kit
+
+        Build Project
+
+        Run
+
+        Start Debugging
+
+
+----------------------------------------------------------------------------
+4. Instalación de la librería Modbus ARM.
+
+    - Copiamos "libmodbus-3.0.5.tar.gz" en "$HOME/sci" con WinSCP.
+
+    - Compilamos e instalamos la librería.
+
+cd $HOME/sci
+tar xvzf libmodbus-3.0.5.tar.gz
+cd libmodbus-3.0.5
+./configure
+make
+
+make install
+ldconfig /usr/local/lib
+
+
+----------------------------------------------------------------------------
+5. BeagleBone como dispositivo inteligente Modbus.
+
+    - Copiamos "mbserver" en "$HOME/sci" con WinSCP.
+
+    - Ejecutamos "mbserver":
+
+chmod 755 $HOME/sci/mbserver
+$HOME/sci/mbserver
+
+
+============================================================================
