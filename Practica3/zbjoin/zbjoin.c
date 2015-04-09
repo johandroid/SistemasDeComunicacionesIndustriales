@@ -51,7 +51,7 @@ char *cfg_at_commands[] = {
     "+++",
     "atvr\r",
     "athv\r",
-    "atni PUESTO09\r",
+    "atni JOHAN\r",
     "atsm 4\r",
     "atso 2\r",
     "atct 258\r",

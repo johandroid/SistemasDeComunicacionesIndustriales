@@ -1,9 +1,9 @@
 APPNAME   = zbread
 
-CC        = arm-linux-gnueabihf-gcc
+CC        = arm-linux-gnueabi-gcc
 CCFLAGS   = -c -g -Wall
 
-LD        = arm-linux-gnueabihf-gcc
+LD        = arm-linux-gnueabi-gcc
 LDFLAGS   =-L../../lib
 
 OBJS      = zbread.o
@@ -20,11 +20,11 @@ cleanall:
 	rm -f $(OBJS) $(APPNAME)
 
 deploy:
-	scp $(APPNAME) root@192.168.7.2:/root/sci
-	ssh root@192.168.7.2 chmod 755 /root/sci/$(APPNAME)
+	scp $(APPNAME) root@192.168.7.2:/home/root/sci
+	ssh root@192.168.7.2 chmod 755 /home/root/sci/$(APPNAME)
 
 run:
-	ssh root@192.168.7.2 gdbserver :5000 /root/sci/$(APPNAME)
+	ssh root@192.168.7.2 gdbserver :5000 /home/root/sci/$(APPNAME)
 
 
 $(APPNAME): $(OBJS)

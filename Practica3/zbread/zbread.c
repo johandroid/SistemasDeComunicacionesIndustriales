@@ -75,7 +75,7 @@ int main() {
         "+++",
         "atvr\r",
         "athv\r",
-        "atni PUESTO09\r",
+        "atni PUESTOJOHAN\r",
         "atsm 4\r",
         "atso 2\r",
         "atct 258\r",

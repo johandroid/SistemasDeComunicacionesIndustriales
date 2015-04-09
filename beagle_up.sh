@@ -10,5 +10,5 @@ echo 1 > /proc/sys/net/ipv4/ip_forward
 
 ssh root@192.168.7.2 'route del default'
 ssh root@192.168.7.2 'route add default gw 192.168.7.1'
-# ssh root@192.168.7.2 'nameserver 8.8.8.8'
+# ssh root@192.168.7.2 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
 ssh root@192.168.7.2 'ntpdate -b -s -u es.pool.ntp.org'
